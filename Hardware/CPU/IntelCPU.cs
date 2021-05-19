@@ -468,7 +468,7 @@ namespace OpenHardwareMonitor.Hardware.CPU {
             switch (microarchitecture) {
               case Microarchitecture.Nehalem: {
                   uint multiplier = eax & 0xff;
-                  coreClocks[i].Value = (float)(multiplier * newBusClock);
+                  coreClocks[i].Value = (multiplier * newBusClock);
                 } break;
               case Microarchitecture.SandyBridge:
               case Microarchitecture.IvyBridge:
@@ -485,21 +485,21 @@ namespace OpenHardwareMonitor.Hardware.CPU {
               case Microarchitecture.Tremont:
               case Microarchitecture.TigerLake: {
                   uint multiplier = (eax >> 8) & 0xff;
-                  coreClocks[i].Value = (float)(multiplier * newBusClock);
+                  coreClocks[i].Value = (multiplier * newBusClock);
                 } break;
               default: {
                   double multiplier =
                     ((eax >> 8) & 0x1f) + 0.5 * ((eax >> 14) & 1);
-                  coreClocks[i].Value = (float)(multiplier * newBusClock);
+                  coreClocks[i].Value = (multiplier * newBusClock);
                 } break;
             }
           } else {
             // if IA32_PERF_STATUS is not available, assume TSC frequency
-            coreClocks[i].Value = (float)TimeStampCounterFrequency;
+            coreClocks[i].Value = TimeStampCounterFrequency;
           }
         }
         if (newBusClock > 0) {
-          this.busClock.Value = (float)newBusClock;
+          this.busClock.Value = newBusClock;
           ActivateSensor(this.busClock);
         }
       }
@@ -515,8 +515,8 @@ namespace OpenHardwareMonitor.Hardware.CPU {
 
           DateTime time = DateTime.UtcNow;
           uint energyConsumed = eax;
-          float deltaTime =
-            (float)(time - lastEnergyTime[sensor.Index]).TotalSeconds;
+          double deltaTime =
+            (time - lastEnergyTime[sensor.Index]).TotalSeconds;
           if (deltaTime < 0.01)
             continue;
 
