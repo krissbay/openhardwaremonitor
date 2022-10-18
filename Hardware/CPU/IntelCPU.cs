@@ -35,7 +35,9 @@ namespace OpenHardwareMonitor.Hardware.CPU {
       IceLake,
       CometLake,
       Tremont,
-      TigerLake
+      TigerLake,
+      RocketLake,
+      AlderLake
     }
 
     private readonly Sensor[] coreTemperatures;
@@ -222,6 +224,11 @@ namespace OpenHardwareMonitor.Hardware.CPU {
               case 0x8C: // Intel processors (10nm++)
               case 0x8D:
                 microarchitecture = Microarchitecture.TigerLake;
+                tjMax = GetTjMaxFromMSR();
+                break;
+              case 0x97: //Intel Core 12th in PC
+              case 0x9A: //Intel Core 12th in Mobile
+                microarchitecture = Microarchitecture.AlderLake;
                 tjMax = GetTjMaxFromMSR();
                 break;
               default:
