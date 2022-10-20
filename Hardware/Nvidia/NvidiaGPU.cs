@@ -258,17 +258,16 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         }
       }
 
-      NvDisplayDriverMemoryInfo memoryInfo = new NvDisplayDriverMemoryInfo();
-      memoryInfo.Version = NVAPI.DISPLAY_DRIVER_MEMORY_INFO_VER;
+      NvGpuMemoryInfo memoryInfo = new NvGpuMemoryInfo();
+      memoryInfo.Version = NVAPI.GPU_MEMORY_INFO_VER;
       memoryInfo.Values = new uint[NVAPI.MAX_MEMORY_VALUES_PER_GPU];
-      if (NVAPI.NvAPI_GetDisplayDriverMemoryInfo != null && displayHandle.HasValue &&
-        NVAPI.NvAPI_GetDisplayDriverMemoryInfo(displayHandle.Value, ref memoryInfo) ==
-        NvStatus.OK) {
+      if (NVAPI.NvAPI_GPU_GetMemoryInfo != null &&
+        NVAPI.NvAPI_GPU_GetMemoryInfo(handle, ref memoryInfo) == NvStatus.OK) {
         uint totalMemory = memoryInfo.Values[0];
         uint freeMemory = memoryInfo.Values[4];
         float usedMemory = Math.Max(totalMemory - freeMemory, 0);
-        memoryFree.Value = (float)freeMemory/ 1024;
-        memoryAvail.Value = (float)totalMemory/ 1024;
+        memoryFree.Value = freeMemory/ 1024;
+        memoryAvail.Value = totalMemory/ 1024;
         memoryUsed.Value = usedMemory/ 1024;
         memoryLoad.Value = 100f * usedMemory / totalMemory;
         ActivateSensor(memoryAvail);
@@ -503,14 +502,12 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         r.AppendLine();
       }
 
-      if (NVAPI.NvAPI_GetDisplayDriverMemoryInfo != null && 
-        displayHandle.HasValue) 
+      if (NVAPI.NvAPI_GetDisplayDriverMemoryInfo != null) 
       {
-        NvDisplayDriverMemoryInfo memoryInfo = new NvDisplayDriverMemoryInfo();
-        memoryInfo.Version = NVAPI.DISPLAY_DRIVER_MEMORY_INFO_VER;
+        NvGpuMemoryInfo memoryInfo = new NvGpuMemoryInfo();
+        memoryInfo.Version = NVAPI.GPU_MEMORY_INFO_VER;
         memoryInfo.Values = new uint[NVAPI.MAX_MEMORY_VALUES_PER_GPU];
-        NvStatus status = NVAPI.NvAPI_GetDisplayDriverMemoryInfo(
-          displayHandle.Value, ref memoryInfo);
+        NvStatus status = NVAPI.NvAPI_GPU_GetMemoryInfo(handle, ref memoryInfo);
 
         r.AppendLine("Memory Info");
         r.AppendLine();
@@ -590,7 +587,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
       NVAPI.NvAPI_GPU_SetCoolerLevels(handle, 0, ref coolerLevels);
     }
 
-    public override void Close() {
+    protected override void Dispose(bool disposing) {
       if (this.fanControl != null) {
         this.fanControl.ControlModeChanged -= ControlModeChanged;
         this.fanControl.SoftwareControlValueChanged -=
@@ -599,7 +596,7 @@ namespace OpenHardwareMonitor.Hardware.Nvidia {
         if (this.fanControl.ControlMode != ControlMode.Undefined)
           SetDefaultFanSpeed();
       }
-      base.Close();
+      base.Dispose(disposing);
     }
   }
 }
